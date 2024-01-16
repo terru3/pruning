@@ -1,0 +1,4 @@
+## This file records manually written observations during the various model training runs.
+
+
+### Training was abruptly interrupted by connection issues after prune iteration 15. Prune iteration 16 resumed with saved model and optimizer states—however, unfortunately, validation loss and accuracy clearly struggled to recover

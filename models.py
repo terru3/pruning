@@ -5,10 +5,12 @@ import torch.nn.functional as F
 from utils import set_seed
 from constants import *
 
+
 class Net(nn.Module):
     """
     TODO
     """
+
     def __init__(self):
         super().__init__()
         self.conv1 = nn.Conv2d(3, 64, 3, 1)
@@ -18,8 +20,8 @@ class Net(nn.Module):
         self.dropout = nn.Dropout(0.2)
         self.batchnorm2d_1 = nn.BatchNorm2d(128)
         self.batchnorm2d_2 = nn.BatchNorm2d(512)
-        self.fc1 = nn.Linear(512*2*2, 128)
-        self.fc2 = nn.Linear(128, 100) # 100 classes for fine labels
+        self.fc1 = nn.Linear(512 * 2 * 2, 128)
+        self.fc2 = nn.Linear(128, 100)  # 100 classes for fine labels
 
     def forward(self, x):
 
@@ -44,27 +46,35 @@ class Net(nn.Module):
         return out
 
 
-def get_model_and_optimizer(seed=None):
+def get_model_and_optimizer(seed=None, optimizer=None):
     if seed:
         set_seed(seed)
+
     model = Net()
-    optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
+
+    if optimizer == "RMSprop":
+        optimizer = torch.optim.RMSprop(model.parameters(), lr=LR)
+    else:
+        optimizer = torch.optim.AdamW(model.parameters(), lr=LR)
+
     return model, optimizer
 
-class AttackNet(nn.Module):
-  def __init__(self):
-    super().__init__()
-    self.fc1 = nn.Linear(100, 256) # input = shadow model probs for CIFAR-100
-    self.fc2 = nn.Linear(256, 128)
-    self.fc3 = nn.Linear(128, 1)
 
-  def forward(self, x):
-    x = F.dropout(F.relu(self.fc1(x)))
-    x = F.dropout(F.relu(self.fc2(x)))
-    x = self.fc3(x)
-    return F.log_softmax(x, dim=1)
+class AttackNet(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.fc1 = nn.Linear(100, 256)  # input = shadow model probs for CIFAR-100
+        self.fc2 = nn.Linear(256, 128)
+        self.fc3 = nn.Linear(128, 1)
+
+    def forward(self, x):
+        x = F.dropout(F.relu(self.fc1(x)))
+        x = F.dropout(F.relu(self.fc2(x)))
+        x = self.fc3(x)
+        return F.log_softmax(x, dim=1)
+
 
 def get_attack_model_and_optimizer():
-  model = AttackNet()
-  optimizer = torch.optim.AdamW(model.parameters())
-  return model, optimizer
+    model = AttackNet()
+    optimizer = torch.optim.AdamW(model.parameters())
+    return model, optimizer
